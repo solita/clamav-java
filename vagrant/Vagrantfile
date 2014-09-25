@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  # https://github.com/fgrehm/vagrant-cachier#quick-start
+  if Vagrant.has_plugin?("vagrant-cachier")
+    config.cache.scope = :box
+    config.cache.synced_folder_opts = {
+      type: :nfs,
+      mount_options: ['rw', 'vers=3', 'tcp', 'nolock']
+    }
+  end
+
+  vmbox = "CentOS-6.5-x86_64-v20140311.box"
+  vmbox_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.5-x86_64-v20140311.box"
+
+
+  # Test server for ClamAV virus scanner
+  config.vm.define "clamav" do |clamav|
+    clamav.vm.box = vmbox
+    clamav.vm.box_url = vmbox_url
+
+    clamav.vm.synced_folder "../env", "/env"
+    clamav.vm.provision "shell", inline: "cd /env && ./clamd.sh"
+
+    clamav.vm.network "private_network", ip: "192.168.50.72"
+  end
+end
