@@ -21,6 +21,16 @@ Code is self explanatory. Something like this is the idea:
   if (!ClamAVClient.isCleanReply(reply)) throw new Exception("aaargh. Something was found: ", reply);
 ```
 
+# Maven dependency
+
+```
+<dependency>
+  <groupId>fi.solita.clamav</groupId>
+  <artifactId>clamav-client</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
+
 # Creating the jar
 
 ```
