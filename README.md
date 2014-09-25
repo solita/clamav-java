@@ -12,9 +12,13 @@ http://linux.die.net/man/8/clamd
 Code is self explanatory. Something like this is the idea:
 
 ```
-ClamAVClient cl = new ClamAVClient("192.168.50.72", 3310);
-byte[] reply = cl.scan(input);
-if (!ClamAVClient.isCleanReply(reply)) throw new Exception("aaargh");
+  ClamAVClient cl = new ClamAVClient("192.168.50.72", 3310);
+  try {
+    byte[] reply = cl.scan(input);
+  } catch (Exception e) {
+    throw new RuntimeException("Could not scan the input", e);
+  }
+  if (!ClamAVClient.isCleanReply(reply)) throw new Exception("aaargh. Something was found: ", reply);
 ```
 
 # Creating the jar
