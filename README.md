@@ -40,7 +40,7 @@ mvn install
 # Testing the client
 
 To run the automated tests you are assumed to run the clamd in a local virtual machine. 
-Configuration for [Vagrant](http://www.vagrantup.com/) and [https://www.virtualbox.org/](Oracle Virtualbox) is provided. 
+Configuration for [Vagrant](http://www.vagrantup.com/) and [Oracle Virtualbox](https://www.virtualbox.org/) is provided. 
 
 To start test server simply
 
