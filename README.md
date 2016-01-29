@@ -7,6 +7,8 @@ Support for basic INSTREAM scanning and PING command.
 Clamd protocol is explained here:
 http://linux.die.net/man/8/clamd
 
+A REST style API and server can be found from another repository, [clamav-rest](https://github.com/solita/clamav-rest). 
+
 # Using the client
 
 Code is self explanatory. Something like this is the idea:
