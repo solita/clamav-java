@@ -11,10 +11,10 @@ import org.junit.Test;
 /**
  * These tests assume clamd is running and responding in the virtual machine. 
  */
-public class InstreamTests {
+public class InstreamTest {
 
   private byte[] scan(byte[] input) throws UnknownHostException, IOException  {
-    ClamAVClient cl = new ClamAVClient("192.168.50.72", 3310);
+    ClamAVClient cl = new ClamAVClient("localhost", 3310);
     return cl.scan(input);
   }
   
