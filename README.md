@@ -1,5 +1,7 @@
 Simple [ClamAV](http://www.clamav.net/) Java client
 
+Travis CI [![Build Status](https://travis-ci.org/solita/clamav-java.svg?branch=master)](https://travis-ci.org/solita/clamav-java)
+
 # What is provided
 
 Support for basic INSTREAM scanning and PING command. 
@@ -42,7 +44,7 @@ mvn install
 # Testing the client
 
 To run the automated tests you are assumed to run the clamd in a local virtual machine. 
-Configuration for [Vagrant](http://www.vagrantup.com/) and [Oracle Virtualbox](https://www.virtualbox.org/) is provided. 
+Configuration for [Vagrant](http://www.vagrantup.com/) and [Oracle Virtualbox](https://www.virtualbox.org/) is provided.
 
 To start test server simply
 
@@ -52,6 +54,8 @@ vagrant up clamav
 ```
 
 This will kick up a CentOS virtual machine and install [ClamAV](http://www.clamav.net/) in it.
+
+Alternatively, you could use Docker image to run ClamAV. Automated tests with Travis CI run using [Docker image for ClamAV](https://hub.docker.com/r/mkodockx/docker-clamav/).
 
 # License
 
