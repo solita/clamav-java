@@ -1,6 +1,6 @@
-Simple [ClamAV](http://www.clamav.net/) Java client
+Simple [ClamAV](http://www.clamav.net/) Java client. See also [ClamAV REST service](https://github.com/solita/clamav-rest) which builds on top of this.
 
-Travis CI [![Build Status](https://travis-ci.org/solita/clamav-java.svg?branch=master)](https://travis-ci.org/solita/clamav-java)
+Travis CI: [![Build Status](https://travis-ci.org/solita/clamav-java.svg?branch=master)](https://travis-ci.org/solita/clamav-java)
 
 # What is provided
 
