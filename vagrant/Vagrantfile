@@ -25,5 +25,7 @@ Vagrant.configure("2") do |config|
     clamav.vm.provision "shell", inline: "cd /env && ./clamd.sh"
 
     clamav.vm.network "private_network", ip: "192.168.50.72"
+
+    clamav.vm.network "forwarded_port", host: 3310, guest: 3310
   end
 end
