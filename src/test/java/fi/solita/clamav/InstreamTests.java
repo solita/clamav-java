@@ -14,7 +14,7 @@ import org.junit.Test;
 public class InstreamTests {
 
   private byte[] scan(byte[] input) throws UnknownHostException, IOException  {
-    ClamAVClient cl = new ClamAVClient("192.168.50.72", 3310);
+    ClamAVClient cl = new ClamAVClient("localhost", 3310);
     return cl.scan(input);
   }
   
