@@ -31,12 +31,6 @@ public class InstreamTest {
     byte[] r =  scan(EICAR);
     assertFalse(ClamAVClient.isCleanReply(r));
   }
-  
-  @Test
-  public void testEmptyBytes() throws UnknownHostException, IOException {
-    byte[] r = scan(new byte[]{});
-    assertTrue(ClamAVClient.isCleanReply(r));
-  }
 
   @Test
   public void testStreamChunkingWorks() throws UnknownHostException, IOException {
