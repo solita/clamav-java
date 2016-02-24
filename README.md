@@ -17,12 +17,15 @@ Code is self explanatory. Something like this is the idea:
 
 ```
   ClamAVClient cl = new ClamAVClient("192.168.50.72", 3310);
+  byte[] reply;
   try {
-    byte[] reply = cl.scan(input);
+    reply = cl.scan(input);
   } catch (Exception e) {
     throw new RuntimeException("Could not scan the input", e);
   }
-  if (!ClamAVClient.isCleanReply(reply)) throw new Exception("aaargh. Something was found: ", reply);
+  if (!ClamAVClient.isCleanReply(reply)) {
+   throw new Exception("aaargh. Something was found");
+  }
 ```
 
 # Maven dependency
