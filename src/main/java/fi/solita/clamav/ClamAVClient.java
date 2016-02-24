@@ -6,7 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -107,14 +107,14 @@ public class ClamAVClient {
   /**
    * @return true if no virus was found according to the clamd reply message
    */
-  public static boolean isCleanReply(byte[] reply) throws UnsupportedEncodingException {
-    String r = new String(reply, "ASCII");
+  public static boolean isCleanReply(byte[] reply) {
+    String r = new String(reply, StandardCharsets.US_ASCII);
     return (r.contains("OK") && !r.contains("FOUND"));
   }
 
   // byte conversion based on ASCII character set regardless of the current system locale
-  private static byte[] asBytes(String s) throws UnsupportedEncodingException {
-    return s.getBytes("ASCII");
+  private static byte[] asBytes(String s) {
+    return s.getBytes(StandardCharsets.US_ASCII);
   }
 
   // reads all available bytes from the stream
