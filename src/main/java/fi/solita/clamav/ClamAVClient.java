@@ -25,6 +25,8 @@ public class ClamAVClient {
   private static final int DEFAULT_TIMEOUT = 500;
 
   /**
+   * @param hostName The hostname of the server running clamav-daemon
+   * @param port The port that clamav-daemon listens to(By default it might not listen to a port. Check your clamav configuration).
    * @param timeout zero means infinite timeout. Not a good idea, but will be accepted.
    */
   public ClamAVClient(String hostName, int port, int timeout)  {
@@ -58,6 +60,9 @@ public class ClamAVClient {
 
   /**
    * Streams the given data to the server in chunks. The whole data is not kept in memory.
+   * This method is preferred if you don't want to keep the data in memory, for instance by scanning a file on disk.
+   * Since the parameter InputStream is not reset, you can not use the stream afterwards, as it will be left in a EOF-state.
+   * If your goal is to scan some data, and then pass that data further, consider using {@link #scan(byte[]) scan(byte[] in)}.
    * <p>
    * Opens a socket and reads the reply. Parameter input stream is NOT closed. 
    * 
@@ -96,6 +101,8 @@ public class ClamAVClient {
   }
 
   /**
+   * Scans bytes for virus by passing the bytes to clamav
+   * 
    * @param in data to scan
    * @return server reply
    **/
@@ -105,6 +112,9 @@ public class ClamAVClient {
   }
 
   /**
+   * Interpret the result from a  ClamAV scan, and determine if the result means the data is clean
+   *
+   * @param reply The reply from the server after scanning
    * @return true if no virus was found according to the clamd reply message
    */
   public static boolean isCleanReply(byte[] reply) {
