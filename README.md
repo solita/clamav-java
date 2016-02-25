@@ -60,6 +60,14 @@ This will kick up a CentOS virtual machine and install [ClamAV](http://www.clama
 
 Alternatively, you could use Docker image to run ClamAV. Automated tests with Travis CI run using [Docker image for ClamAV](https://hub.docker.com/r/mkodockx/docker-clamav/).
 
+## Contributors
+
+* [Antti Virtanen](https://github.com/lokori)
+* [Ari Ruotsalainen](https://github.com/ruoat)
+* [Heikki Hokkanen](https://github.com/hoxu)
+* [Henrik Alstad](https://github.com/drogin)
+
+
 # License
 
 Copyright © 2014 [Solita](http://www.solita.fi)
