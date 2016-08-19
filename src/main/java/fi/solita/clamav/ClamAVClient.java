@@ -53,7 +53,10 @@ public class ClamAVClient {
       outs.write(asBytes("zPING\0"));
       outs.flush();
       byte[] b = new byte[4];
-      s.getInputStream().read(b);
+      int bytesRead = s.getInputStream().read(b);
+      if (bytesRead != 4) {
+    	  throw new IOException("PING reply could not be read. Bytes available: " + bytesRead);
+      }
       return Arrays.equals(b, asBytes("PONG"));
     }
   }
