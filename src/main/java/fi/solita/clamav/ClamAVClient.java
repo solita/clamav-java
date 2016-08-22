@@ -23,6 +23,7 @@ public class ClamAVClient {
   // "do not exceed StreamMaxLength as defined in clamd.conf, otherwise clamd will reply with INSTREAM size limit exceeded and close the connection."
   private static final int CHUNK_SIZE = 2048;
   private static final int DEFAULT_TIMEOUT = 500;
+  private static final int PONG_REPLY_LEN = 4;
 
   /**
    * @param hostName The hostname of the server running clamav-daemon
@@ -52,11 +53,14 @@ public class ClamAVClient {
       s.setSoTimeout(timeout);
       outs.write(asBytes("zPING\0"));
       outs.flush();
-      byte[] b = new byte[4];
-      int bytesRead = s.getInputStream().read(b);
-      if (bytesRead != 4) {
-    	  throw new IOException("PING reply could not be read. Bytes available: " + bytesRead);
-      }
+      byte[] b = new byte[PONG_REPLY_LEN];
+      InputStream inputStream = s.getInputStream();
+      int copyIndex = 0;
+      int readResult;
+      do {
+        readResult = inputStream.read(b, copyIndex, Math.max(b.length - copyIndex, 0));
+        copyIndex += readResult;
+      } while (readResult > 0);
       return Arrays.equals(b, asBytes("PONG"));
     }
   }
