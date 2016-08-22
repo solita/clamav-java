@@ -6,9 +6,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -79,30 +80,35 @@ public class ClamAVClient {
   public byte[] scan(InputStream is) throws IOException {
     try (Socket s = new Socket(hostName,port); OutputStream outs = new BufferedOutputStream(s.getOutputStream())) {
       s.setSoTimeout(timeout); 
-
+      
       // handshake
       outs.write(asBytes("zINSTREAM\0"));
       outs.flush();
       byte[] chunk = new byte[CHUNK_SIZE];
 
-      // send data
-      int read = is.read(chunk);
-      while (read >= 0) {
-        // The format of the chunk is: '<length><data>' where <length> is the size of the following data in bytes expressed as a 4 byte unsigned
-        // integer in network byte order and <data> is the actual chunk. Streaming is terminated by sending a zero-length chunk.
-        byte[] chunkSize = ByteBuffer.allocate(4).putInt(read).array();
-        outs.write(chunkSize);
-        outs.write(chunk, 0, read);
-        read = is.read(chunk);
-      }
-
-      // terminate scan
-      outs.write(new byte[]{0,0,0,0});
-      outs.flush();
-
-      // read reply
       try (InputStream clamIs = s.getInputStream()) {
-    	  return assertSizeLimit(readAll(clamIs));
+        // send data
+        int read = is.read(chunk);
+        while (read >= 0) {
+          // The format of the chunk is: '<length><data>' where <length> is the size of the following data in bytes expressed as a 4 byte unsigned
+          // integer in network byte order and <data> is the actual chunk. Streaming is terminated by sending a zero-length chunk.
+          byte[] chunkSize = ByteBuffer.allocate(4).putInt(read).array();
+
+          outs.write(chunkSize);
+          outs.write(chunk, 0, read);
+          if (clamIs.available() > 0) {
+            // reply from server before scan command has been terminated. 
+            byte[] reply = assertSizeLimit(readAll(clamIs));
+            throw new IOException("Scan aborted. Reply from server: " + new String(reply, StandardCharsets.US_ASCII));
+          }
+          read = is.read(chunk);
+        }
+
+        // terminate scan
+        outs.write(new byte[]{0,0,0,0});
+        outs.flush();
+        // read reply
+        return assertSizeLimit(readAll(clamIs));
       }
     } 
   }
@@ -147,11 +153,11 @@ public class ClamAVClient {
     ByteArrayOutputStream tmp = new ByteArrayOutputStream();
 
     byte[] buf = new byte[2000];
-    int read = is.read(buf);
-    while (read > 0) {
-      tmp.write(buf, 0, read);
+    int read = 0;
+    do {
       read = is.read(buf);
-    }
+      tmp.write(buf, 0, read);
+    } while ((read > 0) && (is.available() > 0));
     return tmp.toByteArray();
   }
 }
