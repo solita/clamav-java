@@ -102,7 +102,7 @@ public class ClamAVClient {
 
       // read reply
       try (InputStream clamIs = s.getInputStream()) {
-        return readAll(clamIs);
+    	  return assertSizeLimit(readAll(clamIs));
       }
     } 
   }
@@ -127,6 +127,14 @@ public class ClamAVClient {
   public static boolean isCleanReply(byte[] reply) {
     String r = new String(reply, StandardCharsets.US_ASCII);
     return (r.contains("OK") && !r.contains("FOUND"));
+  }
+  
+
+  private byte[] assertSizeLimit(byte[] reply) {
+    String r = new String(reply, StandardCharsets.US_ASCII);
+    if (r.startsWith("INSTREAM size limit exceeded.")) 
+    	throw new ClamAVSizeLimitException("Clamd size limit exceeded. Full reply from server: " + r);
+    return reply;
   }
 
   // byte conversion based on ASCII character set regardless of the current system locale

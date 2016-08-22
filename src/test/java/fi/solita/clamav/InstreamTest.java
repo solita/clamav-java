@@ -51,4 +51,10 @@ public class InstreamTest {
       byte[] r = scan(new byte[]{});
       assertTrue(ClamAVClient.isCleanReply(r));
   }
+   
+  @Test(expected = ClamAVSizeLimitException.class)
+  public void testSizeLimit() throws UnknownHostException, IOException {
+	  byte[] overlyLarge = new byte[60000];
+      scan(overlyLarge);
+  }
 }
