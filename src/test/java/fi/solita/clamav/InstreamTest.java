@@ -4,6 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.UnknownHostException;
 
 import org.junit.Test;
@@ -13,11 +14,17 @@ import org.junit.Test;
  */
 public class InstreamTest {
 
+  private static String CLAMAV_HOST = "localhost";
+  
   private byte[] scan(byte[] input) throws UnknownHostException, IOException  {
-    ClamAVClient cl = new ClamAVClient("localhost", 3310);
+    ClamAVClient cl = new ClamAVClient(CLAMAV_HOST, 3310);
     return cl.scan(input);
   }
   
+  private byte[] scan(InputStream input) throws UnknownHostException, IOException  {
+    ClamAVClient cl = new ClamAVClient(CLAMAV_HOST, 3310);
+    return cl.scan(input);
+  }
   @Test
   public void testRandomBytes() throws UnknownHostException, IOException {
     byte[] r = scan("alsdklaksdla".getBytes("ASCII"));
@@ -50,5 +57,10 @@ public class InstreamTest {
   public void testZeroBytes() throws UnknownHostException, IOException {
       byte[] r = scan(new byte[]{});
       assertTrue(ClamAVClient.isCleanReply(r));
+  }
+
+  @Test(expected = ClamAVSizeLimitException.class)
+  public void testSizeLimit() throws UnknownHostException, IOException {
+	  scan(new SlowInputStream());
   }
 }
