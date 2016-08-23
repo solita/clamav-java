@@ -34,7 +34,7 @@ Code is self explanatory. Something like this is the idea:
 <dependency>
   <groupId>fi.solita.clamav</groupId>
   <artifactId>clamav-client</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
 </dependency>
 ```
 
@@ -58,7 +58,7 @@ vagrant up clamav
 
 This will kick up a CentOS virtual machine and install [ClamAV](http://www.clamav.net/) in it.
 
-Alternatively, you could use Docker image to run ClamAV. Automated tests with Travis CI run using [Docker image for ClamAV](https://hub.docker.com/r/mkodockx/docker-clamav/).
+Alternatively, you could use Docker image to run ClamAV. Automated tests with Travis CI run using [Docker image for ClamAV](https://hub.docker.com/r/lokori/clamav-java/). The test image runs with artificially low MaxStreamLength setting on purpose.
 
 ## Contributors
 
