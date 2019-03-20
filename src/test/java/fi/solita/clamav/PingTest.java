@@ -1,11 +1,10 @@
 package fi.solita.clamav;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
 /**
  * These tests assume clamd is running and responding in the virtual machine. 
@@ -13,8 +12,8 @@ import org.junit.Test;
 public class PingTest {
 
   @Test
-  public void testPingPong() throws UnknownHostException, IOException  {
-    ClamAVClient cl = new ClamAVClient("localhost", 3310);
+  public void testPingPong() throws IOException  {
+    ClamAVClient cl = new ClamAVClient(TestConfiguration.CLAMAV_HOST, TestConfiguration.CLAMAV_PORT);
     assertTrue(cl.ping());
   }
 }
