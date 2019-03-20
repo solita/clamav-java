@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -111,6 +110,28 @@ public class ClamAVClient {
         return assertSizeLimit(readAll(clamIs));
       }
     } 
+  }
+
+  /**
+   * Scan file by the path on the filesystem
+   * @param filepath the path to file to scan. Example: /share/attachments/virus.txt
+   * @return server reply
+   */
+  public byte[] scan(String filepath) throws IOException {
+    try (Socket socket = new Socket(hostName, port);
+         OutputStream outs = new BufferedOutputStream(socket.getOutputStream())) {
+      socket.setSoTimeout(timeout);
+
+      // handshake
+      final String multiScanCmd = "MULTISCAN" + " " + filepath;
+      outs.write(multiScanCmd.getBytes(StandardCharsets.US_ASCII));
+      outs.flush();
+
+      try (InputStream response = socket.getInputStream()) {
+        return readAll(response);
+      }
+
+    }
   }
 
   /**
