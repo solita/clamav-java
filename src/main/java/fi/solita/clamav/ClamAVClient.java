@@ -52,7 +52,7 @@ public class ClamAVClient {
   public boolean ping() throws IOException {
     try (Socket s = new Socket(hostName,port); OutputStream outs = s.getOutputStream()) {
       s.setSoTimeout(timeout);
-      outs.write(asBytes("zPING\0"));
+      outs.write(asBytes("PING"));
       outs.flush();
       byte[] b = new byte[PONG_REPLY_LEN];
       InputStream inputStream = s.getInputStream();
