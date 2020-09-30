@@ -1,11 +1,9 @@
 package fi.solita.clamav;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.newsclub.net.unix.AFUNIXSocket;
+import org.newsclub.net.unix.AFUNIXSocketAddress;
+
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
@@ -20,6 +18,7 @@ public class ClamAVClient {
   private String hostName;
   private int port;
   private int timeout;
+  private File unixSocket;
 
   // "do not exceed StreamMaxLength as defined in clamd.conf, otherwise clamd will reply with INSTREAM size limit exceeded and close the connection."
   private static final int CHUNK_SIZE = 2048;
@@ -40,8 +39,20 @@ public class ClamAVClient {
     this.timeout = timeout;
   }
 
+  public ClamAVClient(File unixSocket, int timeout)  {
+    if (timeout < 0) {
+      throw new IllegalArgumentException("Negative timeout value does not make sense.");
+    }
+    this.unixSocket = unixSocket;
+    this.timeout = timeout;
+  }
+
   public ClamAVClient(String hostName, int port) {
     this(hostName, port, DEFAULT_TIMEOUT);
+  }
+
+  public ClamAVClient(File unixSocket) {
+    this(unixSocket, DEFAULT_TIMEOUT);
   }
 
   /**
@@ -50,12 +61,24 @@ public class ClamAVClient {
    * @return true if the server responded with proper ping reply.
    */
   public boolean ping() throws IOException {
-    try (Socket s = new Socket(hostName,port); OutputStream outs = s.getOutputStream()) {
-      s.setSoTimeout(timeout);
-      outs.write(asBytes("zPING\0"));
-      outs.flush();
-      byte[] b = new byte[PONG_REPLY_LEN];
-      InputStream inputStream = s.getInputStream();
+    if(hostName != null) {
+      try (Socket s = new Socket(hostName, port); OutputStream outs = s.getOutputStream()) {
+        return equalsPong(s, outs);
+      }
+    } else {
+      try (AFUNIXSocket s = AFUNIXSocket.connectTo(new AFUNIXSocketAddress(unixSocket));
+           OutputStream outs = s.getOutputStream()) {
+        return equalsPong(s, outs);
+      }
+    }
+  }
+
+  public boolean equalsPong(Socket s, OutputStream outs) throws IOException {
+    s.setSoTimeout(timeout);
+    outs.write(asBytes("zPING\0"));
+    outs.flush();
+    byte[] b = new byte[PONG_REPLY_LEN];
+    try (InputStream inputStream = s.getInputStream()) {
       int copyIndex = 0;
       int readResult;
       do {
@@ -65,6 +88,8 @@ public class ClamAVClient {
       return Arrays.equals(b, asBytes("PONG"));
     }
   }
+
+
 
   /**
    * Streams the given data to the server in chunks. The whole data is not kept in memory.
@@ -78,39 +103,50 @@ public class ClamAVClient {
    * @return server reply
    */
   public byte[] scan(InputStream is) throws IOException {
-    try (Socket s = new Socket(hostName,port); OutputStream outs = new BufferedOutputStream(s.getOutputStream())) {
-      s.setSoTimeout(timeout); 
-      
-      // handshake
-      outs.write(asBytes("zINSTREAM\0"));
-      outs.flush();
-      byte[] chunk = new byte[CHUNK_SIZE];
-
-      try (InputStream clamIs = s.getInputStream()) {
-        // send data
-        int read = is.read(chunk);
-        while (read >= 0) {
-          // The format of the chunk is: '<length><data>' where <length> is the size of the following data in bytes expressed as a 4 byte unsigned
-          // integer in network byte order and <data> is the actual chunk. Streaming is terminated by sending a zero-length chunk.
-          byte[] chunkSize = ByteBuffer.allocate(4).putInt(read).array();
-
-          outs.write(chunkSize);
-          outs.write(chunk, 0, read);
-          if (clamIs.available() > 0) {
-            // reply from server before scan command has been terminated. 
-            byte[] reply = assertSizeLimit(readAll(clamIs));
-            throw new IOException("Scan aborted. Reply from server: " + new String(reply, StandardCharsets.US_ASCII));
-          }
-          read = is.read(chunk);
-        }
-
-        // terminate scan
-        outs.write(new byte[]{0,0,0,0});
-        outs.flush();
-        // read reply
-        return assertSizeLimit(readAll(clamIs));
+    if(hostName != null) {
+      try (Socket s = new Socket(hostName, port); OutputStream outs = new BufferedOutputStream(s.getOutputStream())) {
+        return scanResult(is, s, outs);
       }
-    } 
+    } else {
+      try (AFUNIXSocket s = AFUNIXSocket.connectTo(new AFUNIXSocketAddress(unixSocket));
+           OutputStream outs = new BufferedOutputStream(s.getOutputStream())) {
+        return scanResult(is, s, outs);
+      }
+    }
+  }
+
+  public byte[] scanResult(InputStream is, Socket s, OutputStream outs) throws IOException {
+    s.setSoTimeout(timeout);
+
+    // handshake
+    outs.write(asBytes("zINSTREAM\0"));
+    outs.flush();
+    byte[] chunk = new byte[CHUNK_SIZE];
+
+    try (InputStream clamIs = s.getInputStream()) {
+      // send data
+      int read = is.read(chunk);
+      while (read >= 0) {
+        // The format of the chunk is: '<length><data>' where <length> is the size of the following data in bytes expressed as a 4 byte unsigned
+        // integer in network byte order and <data> is the actual chunk. Streaming is terminated by sending a zero-length chunk.
+        byte[] chunkSize = ByteBuffer.allocate(4).putInt(read).array();
+
+        outs.write(chunkSize);
+        outs.write(chunk, 0, read);
+        if (clamIs.available() > 0) {
+          // reply from server before scan command has been terminated.
+          byte[] reply = assertSizeLimit(readAll(clamIs));
+          throw new IOException("Scan aborted. Reply from server: " + new String(reply, StandardCharsets.US_ASCII));
+        }
+        read = is.read(chunk);
+      }
+
+      // terminate scan
+      outs.write(new byte[]{0,0,0,0});
+      outs.flush();
+      // read reply
+      return assertSizeLimit(readAll(clamIs));
+    }
   }
 
   /**
