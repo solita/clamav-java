@@ -34,6 +34,9 @@
   </developers>
 
   <properties>
+    <sonar.projectKey>drogin_clamav-java</sonar.projectKey>
+    <sonar.organization>drogin-clamav</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 

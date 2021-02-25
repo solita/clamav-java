@@ -154,10 +154,9 @@ public class ClamAVClient {
 
     byte[] buf = new byte[2000];
     int read = 0;
-    do {
-      read = is.read(buf);
-      tmp.write(buf, 0, read);
-    } while ((read > 0) && (is.available() > 0));
+    while ((read = is.read(buf)) != -1) {
+        tmp.write(buf, 0, read);
+    }
     return tmp.toByteArray();
   }
 }
