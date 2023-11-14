@@ -25,6 +25,7 @@ public class ClamAVClient {
   private static final int CHUNK_SIZE = 2048;
   private static final int DEFAULT_TIMEOUT = 500;
   private static final int PONG_REPLY_LEN = 4;
+  private static final int VERSION_REPLY_LEN = 256;
 
   /**
    * @param hostName The hostname of the server running clamav-daemon
@@ -63,6 +64,28 @@ public class ClamAVClient {
         copyIndex += readResult;
       } while (readResult > 0);
       return Arrays.equals(b, asBytes("PONG"));
+    }
+  }
+
+  /**
+   * Run VERSION command to clamd.
+   *
+   * @return Version string that the server responded with.
+   */
+  public boolean version() throws IOException {
+    try (Socket s = new Socket(hostName,port); OutputStream outs = s.getOutputStream()) {
+      s.setSoTimeout(timeout);
+      outs.write(asBytes("zVERSION\0"));
+      outs.flush();
+      byte[] b = new byte[VERSION_REPLY_LEN];
+      InputStream inputStream = s.getInputStream();
+      int copyIndex = 0;
+      int readResult;
+      do {
+        readResult = inputStream.read(b, copyIndex, Math.max(b.length - copyIndex, 0));
+        copyIndex += readResult;
+      } while (readResult > 0);
+      return new String(b, StandardCharsets.UTF_8);
     }
   }
 
